@@ -1,4 +1,3 @@
-# Playground
+> Happiness lies in the joy of achievement and the thrill of creative effort.
 
-Where I stick all the little toys/projects/explorations that I make purely for
-fun, or as an attempt to solve some miscellaneous problem in my life.
+\- Franklin D. Roosevelt
