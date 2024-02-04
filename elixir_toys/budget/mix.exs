@@ -21,7 +21,7 @@ defmodule Budget.MixProject do
   # Run "mix help deps" to learn about dependencies.
   def deps do
     [
-      {:tempo, "~> 0.1.0", github: "kipcole9/tempo"}
+      {:tempo, "~> 0.1.0", github: "h14h/tempo"}
     ]
   end
 end
