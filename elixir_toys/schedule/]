@@ -1,0 +1,224 @@
+defmodule Tidsenhet do
+  @moduledoc """
+  Tidsenhet is the Swedish word for "unit of time".
+
+  This module provides types and functions for working with units of time. Many
+  of the types might be superfluous, but learning about the various edge-cases
+  was fun, and documenting them may prove useful at a later point in time.
+
+  The way the types are defined here also doesn't actually accomplish anything
+  in the way of safety -- it's all pretty much just an intellectual exercise
+  for the time-being.
+  """
+  defstruct [:value, :units]
+
+  @type t :: %__MODULE__{
+          value: value(),
+          units: units()
+        }
+
+  @type value ::
+          minute()
+          | hour()
+          | day()
+          | month()
+          | year()
+
+  @type units ::
+          :minutes
+          | :hours
+          | :days
+          | :weeks
+          | :months
+          | :years
+
+  # FIXME: Using static ranges only for now
+  @type minute :: static_minute_ranges()
+  @type hour :: static_hour_ranges()
+  @type day :: static_day_ranges()
+
+  # Here we define the time unit conversions that do not vary.
+  @minutes_in_hour 60
+  @hours_in_day 24
+  @days_in_week 7
+  @months_in_year 12
+
+  @minutes_in_day @minutes_in_hour * @hours_in_day
+  @minutes_in_week @minutes_in_day * @days_in_week
+
+  @hours_in_week @hours_in_day * @days_in_week
+
+  # Here are the time ranges that do not vary.
+  @minutes_of_hour 0..(@minutes_in_hour - 1)
+  @minutes_of_day 0..(@minutes_in_day - 1)
+  @minutes_of_week 0..(@minutes_in_week - 1)
+
+  @hours_of_day 0..(@hours_in_day - 1)
+  @hours_of_week 0..(@hours_in_week - 1)
+
+  @days_of_week 1..@days_in_week
+
+  @months_of_year 1..@months_in_year
+
+  @typedoc """
+  The number of seconds in a range varies depending on size of its parent unit,
+  as well as whether it takes place in a leap year, and or a year in which a
+  leap second will be applied.
+
+  For example, when the parent unit is a month, hour, day, or week, there are
+  three possible ranges due to the existance of both positive and negative leap
+  seconds.
+
+  For years, there are six possible ranges (three variations due to leap
+  seconds, multiplied by two due to leap years).
+
+  Months are even more variable, with eight possible ranges:
+  1. Februrary in a non-leap year
+  2. Februrary in a leap year
+  3. April, June, September, or November with no leap second
+  4. January, March, May, July, August, October, or December with no leap second
+  5. June with a positive leap second
+  6. December with a positive leap second
+  7. June with a negative leap second
+  8. December with a negative leap second
+
+  Ranges 7 and 8 are not particularly likely, but they are actual provisions of
+  the standard, formulated to cover the possibility of changes to the Earth's
+  rotation.
+  """
+  @type variable_second_ranges ::
+          second_of_minute()
+          | second_of_hour()
+          | second_of_day()
+          | second_of_week()
+          | second_of_month()
+          | second_of_year()
+
+  @type second_of_minute :: 0..58 | 0..59 | 0..60
+  @type second_of_hour :: 0..3_598 | 0..3_599 | 0..3_600
+  @type second_of_day :: 0..86_398 | 0..86_399 | 0..86_400
+  @type second_of_week :: 0..604_798 | 0..604_799 | 0..604_800
+  @type second_of_month ::
+          0..2_419_199
+          | 0..2_505_599
+          | 0..2_591_998
+          | 0..2_591_999
+          | 0..2_592_000
+          | 0..2_678_398
+          | 0..2_678_399
+          | 0..2_678_400
+
+  @type second_of_year ::
+          0..32_535_998
+          | 0..31_535_999
+          | 0..31_536_000
+          | 0..31_622_398
+          | 0..31_622_399
+          | 0..31_622_400
+
+  @typedoc """
+  The number of minutes in a range varies depending on size of its parent unit,
+  as well as whether it takes place in a leap year.
+
+  For example, for months, there are four possible ranges, and for years, there
+  are two.
+  """
+  @type variable_minute_ranges ::
+          minute_of_month()
+          | minute_of_year()
+
+  @type static_minute_ranges ::
+          minute_of_hour()
+          | minute_of_day()
+          | minute_of_week()
+
+  @type minute_of_hour :: 0..59
+  @type minute_of_day :: 0..1_439
+  @type minute_of_week :: 0..10_079
+  @type minute_of_month :: 0..40_319 | 0..41_759 | 0..43_199 | 0..44_639
+  @type minute_of_year :: 0..525_599 | 0..527_039
+
+  @typedoc """
+  The number of hours in a range varies depending on size of its parent unit,
+  as well as whether it takes place in a leap year.
+
+  For example, for months, there are four possible ranges, and for years, there
+  are two.
+  """
+  @type variable_hour_ranges ::
+          hour_of_month()
+          | hour_of_year()
+
+  @type static_hour_ranges ::
+          hour_of_day()
+          | hour_of_week()
+
+  @type hour_of_day :: 0..23
+  @type hour_of_week :: 0..167
+  @type hour_of_month :: 0..671 | 0..695 | 0..719 | 0..743
+  @type hour_of_year :: 0..8_759 | 0..8_783
+
+  @typedoc """
+  The number of days in a range varies depending on size of its parent unit, as
+  well as whether it takes place in a leap year. 
+
+  For example, for months, there are four possible ranges, and for years, there
+  are two.
+  """
+  @type variable_day_ranges ::
+          day_of_month()
+          | day_of_year()
+
+  @type static_day_ranges :: day_of_week()
+
+  @type day_of_week :: 1..7
+  @type day_of_month :: 1..28 | 1..29 | 1..30 | 1..31
+  @type day_of_year :: 1..365 | 1..366
+
+  @typedoc """
+  There are only ever twelve months in a year.
+  """
+  @type month :: month_of_year()
+  @type month_of_year :: 1..12
+
+  @typedoc """
+  The number of seconds in a month varies depending on the standard length of a given month, as well as whether a leap year and/or a leap second is being added.
+
+  There s:
+  """
+  @type
+
+  def minutes_of_hour(), do: @minutes_of_hour
+  @minutes_of_day 0..(@minutes_in_day - 1)
+
+  @minutes_of_week 0..(@minutes_in_week - 1)
+
+  @hours_of_day 0..(@hours_in_day - 1)
+  @hours_of_week 0..(@hours_in_week - 1)
+
+  @days_of_week 1..@days_in_week
+
+  @months_of_year 1..@months_in_year
+
+  @doc """
+  Returns the range of minutes in a month, given the number of days in the
+  month.
+  """
+  def minutes_of_month(month_length) do
+    case month_length do
+      {28, false} -> 0..40_319
+      {29, false} -> 0..41_759
+      {30, false} -> 0..43_199
+      {31, false} -> 0..44_639
+    end
+  end
+
+  def hours_of_day(), do: 0..(@hours_in_day - 1)
+
+  def hours_of_week(), do: 0..(@hours_in_week - 1)
+
+  def days_of_week(), do: 1..@days_in_week
+  def days_of_month(month_length), do: 1..month_length
+
+  def months_of_year(), do: 1..@months_in_year
+end

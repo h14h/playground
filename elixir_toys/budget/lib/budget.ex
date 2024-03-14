@@ -48,6 +48,6 @@ defmodule Budget do
   defp beginning_of_year() do
     {current_year, _} = Tempo.utc_today() |> Tempo.year_of_era()
 
-    Tempo.new!(current_year, 1, 1)
+    Date.new!(current_year, 1, 1)
   end
 end
